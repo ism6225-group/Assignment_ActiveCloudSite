@@ -15,7 +15,7 @@ namespace Assignment_ActiveCloudSite.Controllers
             return View();
         }
 
-        public IActionResult Privacy()
+        public IActionResult About()
         {
             return View();
         }
