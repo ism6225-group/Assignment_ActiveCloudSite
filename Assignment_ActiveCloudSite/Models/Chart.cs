@@ -5,10 +5,7 @@ using System.Threading.Tasks;
 
 namespace Assignment_ActiveCloudSite.Models
 {
-    public class ErrorViewModel
+    public class Chart
     {
-        public string RequestId { get; set; }
-
-        public bool ShowRequestId => !string.IsNullOrEmpty(RequestId);
     }
 }
