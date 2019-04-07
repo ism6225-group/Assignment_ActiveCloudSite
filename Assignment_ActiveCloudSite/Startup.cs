@@ -8,6 +8,8 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.EntityFrameworkCore;
+using Assignment_ActiveCloudSite.DataAccess;
 
 namespace Assignment_ActiveCloudSite
 {
@@ -32,6 +34,9 @@ namespace Assignment_ActiveCloudSite
 
 
             services.AddMvc().SetCompatibilityVersion(CompatibilityVersion.Version_2_2);
+
+            // Setup EF connection - modify the Conguration string
+            services.AddDbContext<ApplicationDBContext>(options => options.UseSqlServer(Configuration["Data:Assignment_ActiveCloudSite:ConnectionString"]));
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.

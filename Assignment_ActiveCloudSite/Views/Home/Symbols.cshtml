@@ -1,0 +1,63 @@
+﻿@{
+    ViewData["Title"] = "Symbols";
+}
+
+@model IEnumerable<Assignment_ActiveCloudSite.Models.Symbol>
+
+<h2>Market symbols</h2>
+<p><bold>Symbol</bold>: refers to the symbol represented in Nasdaq Integrated symbology (INET).</p>
+<p class="text-center">
+    <a class="btn btn-primary" asp-controller="Home" asp-action="ReadSymbols">Read Symbols</a>
+    <a class="btn btn-success" asp-controller="Home" asp-action="UpdateSymbols">Update Symbols</a>
+    <a class="btn btn-danger" asp-controller="Home" asp-action="DeleteSymbols">Delete Symbols</a>
+</p>
+@if (Model == null)
+{
+    <p class="alert-info text-center">Please Read Symbols!</p>
+}
+else if (Model.Count() == 0)
+{
+    <p class="alert-danger text-center">Our database is empty! please Update Symbols first!</p>
+}
+else
+{
+    <table class="table">
+        <thead>
+            <tr>
+                <th>
+                    Symbol
+                </th>
+                <th>
+                    Name
+                </th>
+                <th>
+                    Date
+                </th>
+                <th>
+                    Type
+                </th>
+            </tr>
+        </thead>
+
+        <tbody>
+
+            @foreach (var item in Model)
+            {
+                <tr>
+                    <td>
+                        @Html.DisplayFor(modelItem => item.symbol)
+                    </td>
+                    <td>
+                        @Html.DisplayFor(modelItem => item.name)
+                    </td>
+                    <td>
+                        @Html.DisplayFor(modelItem => item.date)
+                    </td>
+                    <td>
+                        @Html.DisplayFor(modelItem => item.type)
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
