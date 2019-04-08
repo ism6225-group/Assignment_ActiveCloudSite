@@ -6,8 +6,9 @@ using System.ComponentModel.DataAnnotations;
 
 namespace Assignment_ActiveCloudSite.Models
 {
-    public class News
+    public class Article
     {
+        [Key]
         public string datetime { get; set; }
         public string headline { get; set; }
         public string source { get; set; }
@@ -15,5 +16,6 @@ namespace Assignment_ActiveCloudSite.Models
         public string summary { get; set; }
         public string related { get; set; }
         public string image { get; set; }
+        public string symbol { get; set; }
     }
 }

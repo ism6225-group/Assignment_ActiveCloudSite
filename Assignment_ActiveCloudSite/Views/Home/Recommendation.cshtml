@@ -1,0 +1,55 @@
+﻿@{
+    ViewData["Title"] = "Recommendation";
+}
+
+@model IEnumerable<Assignment_ActiveCloudSite.Models.Recommendation>
+
+<h2>Recommendation of @Model.First().symbol</h2>
+<p><bold>Recommendation Trends</bold> from iexcloud.io Primary Partner.</p>
+<p class="text-center">
+    <a class="btn btn-success" asp-controller="Home" asp-action="Recommendation">Refresh Recommendation</a>
+</p>
+@if (Model == null)
+{
+<p class="alert-info text-center">Please choose a right symbol for Recommendation!</p>
+}
+else if (Model.Count() == 0)
+{
+<p class="alert-danger text-center">Our database is empty! please Refresh Recommendation first!</p>
+}
+else
+{
+<table class="table">
+    <thead>
+        <tr>
+            <th>
+                Number of Recommendations to Buy
+            </th>
+            <th>
+                Number of Recommendations to Hold
+            </th>
+            <th>
+                Number of Recommendations to Sell
+            </th>
+        </tr>
+    </thead>
+
+    <tbody>
+
+        @foreach (var item in Model)
+            {
+        <tr>
+            <td>
+                @Html.DisplayFor(modelItem => item.ratingBuy)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.ratingHold)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.ratingSell)
+            </td>
+        </tr>
+            }
+    </tbody>
+</table>
+}

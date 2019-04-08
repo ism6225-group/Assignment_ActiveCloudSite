@@ -31,14 +31,44 @@ namespace Assignment_ActiveCloudSite.Controllers
             return View();
         }
 
+        public IActionResult Stocks()
+        {
+            List<Symbol> symbols = ReadSymbols();
+            return View(symbols);
+        }
+
         public IActionResult Symbols()
         {
-            return View();
+            List<Symbol> symbols = ReadSymbols();
+            return View(symbols);
+        }
+
+        public IActionResult Market()
+        {
+            List<Article> marketNews = ReadLatestMarketNews();
+            return View(marketNews);
+        }
+
+        public IActionResult Recommendation(string symbol = "aapl")
+        {
+            List<Recommendation> recommendations = ReadRecommendations(symbol);
+            return View(recommendations);
         }
 
         public IActionResult About()
         {
             return View();
+        }
+
+        public List<Symbol> ReadSymbols(bool full = false)
+        {
+            List<Symbol> symbols = dbContext.Symbols.ToList();
+            // To show the first 50 symbol, and save some loading time
+            if (!full && symbols.Count() > 50)
+            {
+                symbols = symbols.GetRange(0, 50);
+            }
+            return symbols;
         }
 
         public List<Symbol> GetSymbols()
@@ -61,19 +91,13 @@ namespace Assignment_ActiveCloudSite.Controllers
             if (!symbolsList.Equals(""))
             {
                 symbols = JsonConvert.DeserializeObject<List<Symbol>>(symbolsList);
+                // We return the symbol if it is enabled for trading on IEX and has a common issue type
                 symbols = symbols.Where(s => s.isEnabled && s.type != "N/A").ToList();
-                //symbols = symbols.GetRange(0, 20);
             }
 
             return symbols;
         }
-
-        public IActionResult ReadSymbols()
-        {
-            List<Symbol> symbols = dbContext.Symbols.ToList();
-            return View("Symbols", symbols);
-        }
-
+        
         public IActionResult UpdateSymbols()
         {
             List<Symbol> symbols = GetSymbols();
@@ -81,13 +105,13 @@ namespace Assignment_ActiveCloudSite.Controllers
             foreach (Symbol aSymbol in symbols)
             {
                 //Database will give PK constraint violation error when trying to insert record with existing PK.
-                //So add company only if it doesnt exist, check existence using symbol (PK)
                 if (dbContext.Symbols.Where(s => s.symbol.Equals(aSymbol.symbol)).Count() == 0)
                 {
                     dbContext.Symbols.Add(aSymbol);
                 }
             }
             dbContext.SaveChanges();
+            symbols = ReadSymbols();
             return View("Symbols", symbols);
         }
 
@@ -95,8 +119,137 @@ namespace Assignment_ActiveCloudSite.Controllers
         {
             dbContext.Symbols.RemoveRange(dbContext.Symbols);
             dbContext.SaveChanges();
-            List<Symbol> symbols = dbContext.Symbols.ToList();
+            List<Symbol> symbols = ReadSymbols();
             return View("Symbols", symbols);
+        }
+
+        public IActionResult FullSymbols()
+        {
+            List<Symbol> symbols = ReadSymbols(true);
+            return View("Symbols", symbols);
+        }
+
+        public List<Article> ReadLatestMarketNews()
+        {
+            UpdateLatestMarketNews();
+            List<Article> marketNews = dbContext.News.ToList();
+            marketNews = marketNews.OrderByDescending(n => n.datetime).Take(6).ToList();
+            return marketNews;
+        }
+
+        public List<Article> GetLatestMarketNews()
+        {
+            string MarketNews_API_PATH = BASE_URL_IEXT + "stock/market/news/last/10";
+            string marketNewsList = "";
+            List<Article> marketNews = null;
+
+            // connect to the IEXTrading API and retrieve information
+            httpClient.BaseAddress = new Uri(MarketNews_API_PATH);
+            HttpResponseMessage response = httpClient.GetAsync(MarketNews_API_PATH).GetAwaiter().GetResult();
+
+            // read the Json objects in the API response
+            if (response.IsSuccessStatusCode)
+            {
+                marketNewsList = response.Content.ReadAsStringAsync().GetAwaiter().GetResult();
+            }
+
+            // now, parse the Json strings as C# objects
+            if (!marketNewsList.Equals(""))
+            {
+                marketNews = JsonConvert.DeserializeObject<List<Article>>(marketNewsList);
+                foreach (Article article in marketNews)
+                {
+                    article.symbol = "market";
+                }
+            }
+            return marketNews;
+        }
+
+        public void UpdateLatestMarketNews()
+        {
+            List<Article> marketNews = GetLatestMarketNews();
+
+            foreach (Article article in marketNews)
+            {
+                //Database will give PK constraint violation error when trying to insert record with existing PK.
+                if (dbContext.News.Where(s => s.datetime.Equals(article.datetime)).Count() == 0)
+                {
+                    dbContext.News.Add(article);
+                }
+            }
+            dbContext.SaveChanges();
+        }
+
+        public IActionResult DeleteLatestMarketNews()
+        {
+            dbContext.News.RemoveRange(dbContext.News);
+            dbContext.SaveChanges();
+            List<Article> marketNews = ReadLatestMarketNews();
+            return View("Market", marketNews);
+        }
+
+        public List<Recommendation> ReadRecommendations(string symbol)
+        {
+            // Check if symbol is there
+            //if (dbContext.Symbols.Where(r => r.symbol.Equals(symbol)).Count() == 0)
+            //{
+            //    UpdateSymbols();
+            //    return null;
+            //}
+            UpdateRecommendations(symbol);
+            List<Recommendation> recommendations = dbContext.Recommendations.Where(r => r.symbol.Equals(symbol)).ToList(); ;
+            return recommendations;
+        }
+
+        public List<Recommendation> GetRecommendations(string symbol)
+        {
+            string Recommendations_API_PATH = BASE_URL_IEXC + "stock/" + symbol + "/recommendation-trends?token=pk_541e757bbc83419ba3e8924016f8bce9";
+            string recommendationsList = "";
+            List<Recommendation> recommendations = null;
+
+            // connect to the IEXTrading API and retrieve information
+            httpClient.BaseAddress = new Uri(Recommendations_API_PATH);
+            HttpResponseMessage response = httpClient.GetAsync(Recommendations_API_PATH).GetAwaiter().GetResult();
+
+            // read the Json objects in the API response
+            if (response.IsSuccessStatusCode)
+            {
+                recommendationsList = response.Content.ReadAsStringAsync().GetAwaiter().GetResult();
+            }
+
+            // now, parse the Json strings as C# objects
+            if (!recommendationsList.Equals(""))
+            {
+                // To return the current the consensus only
+                recommendations = JsonConvert.DeserializeObject<List<Recommendation>>(recommendationsList);
+                foreach (Recommendation recommendation in recommendations)
+                {
+                    recommendation.symbol = symbol;
+                }
+                recommendations = recommendations.Where(r => r.consensusEndDate == null).ToList();
+            }
+            return recommendations;
+        }
+
+        public void UpdateRecommendations(string symbol)
+        {
+            List<Recommendation> recommendations = GetRecommendations(symbol);
+
+            foreach (Recommendation recommendation in recommendations)
+            {
+                //Database will give PK constraint violation error when trying to insert record with existing PK.
+                if (dbContext.Recommendations.Where(r => r.symbol.Equals(recommendation.symbol)).Count() == 0)
+                {
+                    dbContext.Recommendations.Add(recommendation);
+                }
+                else
+                {
+                    // Remove old recommendations
+                    dbContext.Recommendations.RemoveRange(dbContext.Recommendations.Where(r => r.symbol.Equals(recommendation.symbol)));
+                    dbContext.Recommendations.Add(recommendation);
+                }
+            }
+            dbContext.SaveChanges();
         }
 
         [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]

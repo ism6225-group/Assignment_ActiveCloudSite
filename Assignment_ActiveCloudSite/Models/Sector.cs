@@ -12,6 +12,5 @@ namespace Assignment_ActiveCloudSite.Models
         public string name { get; set; }
         public float? performance { get; set; }
         public float? lastUppdated { get; set; }
-
     }
 }

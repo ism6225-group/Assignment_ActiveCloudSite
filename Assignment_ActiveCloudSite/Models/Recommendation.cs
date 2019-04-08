@@ -8,7 +8,8 @@ namespace Assignment_ActiveCloudSite.Models
 {
     public class Recommendation
     {
-        
+        [Key]
+        public string symbol { get; set; }
         public float? consensusEndDate { get; set; }
         public float? consensusStartDate { get; set; }
         public float? corporateActionsAppliedDate { get; set; }
@@ -19,6 +20,5 @@ namespace Assignment_ActiveCloudSite.Models
         public float? ratingScaleMark { get; set; }
         public float? ratingSell { get; set; }
         public float? ratingUnderweight { get; set; }
-
     }
 }
