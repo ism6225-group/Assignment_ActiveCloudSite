@@ -55,6 +55,12 @@ namespace Assignment_ActiveCloudSite.Controllers
             return View(recommendations);
         }
 
+        public IActionResult Sectors()
+        {
+            List<Sector> sectors = ReadSectors();
+            return View(sectors);
+        }
+
         public IActionResult About()
         {
             return View();
@@ -115,12 +121,11 @@ namespace Assignment_ActiveCloudSite.Controllers
             return View("Symbols", symbols);
         }
 
-        public IActionResult DeleteSymbols()
+        // To clear Symbole table if we want to test
+        public void DeleteSymbols()
         {
             dbContext.Symbols.RemoveRange(dbContext.Symbols);
             dbContext.SaveChanges();
-            List<Symbol> symbols = ReadSymbols();
-            return View("Symbols", symbols);
         }
 
         public IActionResult FullSymbols()
@@ -180,22 +185,15 @@ namespace Assignment_ActiveCloudSite.Controllers
             dbContext.SaveChanges();
         }
 
-        public IActionResult DeleteLatestMarketNews()
+        // To clear News table if we want to test
+        public void DeleteLatestMarketNews()
         {
             dbContext.News.RemoveRange(dbContext.News);
             dbContext.SaveChanges();
-            List<Article> marketNews = ReadLatestMarketNews();
-            return View("Market", marketNews);
         }
 
         public List<Recommendation> ReadRecommendations(string symbol)
         {
-            // Check if symbol is there
-            //if (dbContext.Symbols.Where(r => r.symbol.Equals(symbol)).Count() == 0)
-            //{
-            //    UpdateSymbols();
-            //    return null;
-            //}
             UpdateRecommendations(symbol);
             List<Recommendation> recommendations = dbContext.Recommendations.Where(r => r.symbol.Equals(symbol)).ToList(); ;
             return recommendations;
@@ -247,6 +245,59 @@ namespace Assignment_ActiveCloudSite.Controllers
                     // Remove old recommendations
                     dbContext.Recommendations.RemoveRange(dbContext.Recommendations.Where(r => r.symbol.Equals(recommendation.symbol)));
                     dbContext.Recommendations.Add(recommendation);
+                }
+            }
+            dbContext.SaveChanges();
+        }
+
+        public List<Sector> ReadSectors()
+        {
+            UpdateSectors();
+            List<Sector> sectors = dbContext.Sectors.ToList();
+            return sectors;
+        }
+
+        public List<Sector> GetSectors()
+        {
+            string Sectors_API_PATH = BASE_URL_IEXT + "stock/market/sector-performance";
+            string sectorsList = "";
+            List<Sector> sectors = null;
+
+            // connect to the IEXTrading API and retrieve information
+            httpClient.BaseAddress = new Uri(Sectors_API_PATH);
+            HttpResponseMessage response = httpClient.GetAsync(Sectors_API_PATH).GetAwaiter().GetResult();
+
+            // read the Json objects in the API response
+            if (response.IsSuccessStatusCode)
+            {
+                sectorsList = response.Content.ReadAsStringAsync().GetAwaiter().GetResult();
+            }
+
+            // now, parse the Json strings as C# objects
+            if (!sectorsList.Equals(""))
+            {
+                // To return the current the consensus only
+                sectors = JsonConvert.DeserializeObject<List<Sector>>(sectorsList);
+            }
+            return sectors;
+        }
+
+        public void UpdateSectors()
+        {
+            List<Sector> sectors = GetSectors();
+
+            foreach (Sector sector in sectors)
+            {
+                //Database will give PK constraint violation error when trying to insert record with existing PK.
+                if (dbContext.Sectors.Where(r => r.name.Equals(sector.name)).Count() == 0)
+                {
+                    dbContext.Sectors.Add(sector);
+                }
+                else
+                {
+                    // Remove old recommendations
+                    dbContext.Sectors.RemoveRange(dbContext.Sectors.Where(r => r.name.Equals(sector.name)));
+                    dbContext.Sectors.Add(sector);
                 }
             }
             dbContext.SaveChanges();

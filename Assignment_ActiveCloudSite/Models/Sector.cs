@@ -8,9 +8,9 @@ namespace Assignment_ActiveCloudSite.Models
 {
     public class Sector
     {
-        public string type { get; set; }
         [Key]
         public string name { get; set; }
+        public string type { get; set; }
         public float? performance { get; set; }
         public float? lastUppdated { get; set; }
     }

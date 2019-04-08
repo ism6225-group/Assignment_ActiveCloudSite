@@ -13,7 +13,7 @@ namespace Assignment_ActiveCloudSite.DataAccess
 
         public DbSet<Symbol> Symbols { get; set; }
         //public DbSet<Company> Companies { get; set; }
-        //public DbSet<Sector> Sectors { get; set; }
+        public DbSet<Sector> Sectors { get; set; }
         //public DbSet<Quote> Quotes { get; set; }
         //public DbSet<Chart> Charts { get; set; }
         public DbSet<Article> News { get; set; }
