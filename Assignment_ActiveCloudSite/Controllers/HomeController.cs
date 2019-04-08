@@ -113,7 +113,7 @@ namespace Assignment_ActiveCloudSite.Controllers
         public IActionResult UpdateSymbols()
         {
             List<Symbol> symbols = GetSymbols();
-
+            DeleteSymbols();
             foreach (Symbol aSymbol in symbols)
             {
                 //Database will give PK constraint violation error when trying to insert record with existing PK.
