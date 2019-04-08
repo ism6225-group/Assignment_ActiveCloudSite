@@ -1,0 +1,85 @@
+﻿@{
+    ViewData["Title"] = "Quote";
+}
+
+@model Assignment_ActiveCloudSite.Models.Quote
+
+@if (Model == null)
+{
+    <p class="text-center">
+        <a class="btn btn-outline-primary" asp-controller="Home" asp-action="Stocks">Back to Stocks</a>
+    </p>
+    <p class="alert-info text-center">Sorry, we could not find any quote for this stock!</p>
+}
+else
+{
+    <h2>Quote of @Model.symbol</h2>
+    <p><bold>Quote</bold> from iextrading.com</p>
+    <div class="text-center">
+        <form asp-action="Quote" method="post">
+            <input type="hidden" name="symbol" value="@Model.symbol" />
+            <button type="submit" class="btn btn-success">
+                Refresh Quote
+            </button>
+        </form>
+        <br>
+    </div>
+    <table class="table">
+        <thead>
+            <tr>
+                <th>
+                    Primary Exchange
+                </th>
+                <th>
+                    Sector
+                </th>
+                <th>
+                    Change
+                </th>
+                <th>
+                    Change %
+                </th>
+                <th>
+                    Week52 High
+                </th>
+                <th>
+                    Week52 Low
+                </th>
+            </tr>
+        </thead>
+
+        <tbody>
+            <tr>
+                <td>
+                    @Model.primaryExchange
+                </td>
+                <td>
+                    @Model.sector
+                </td>
+                <td>
+                    @Model.change
+                </td>
+                <td>
+                    @{
+                        var changePercent = Model.changePercent * 100;
+                    }
+                    @changePercent%
+                </td>
+                <td>
+                    @Model.week52High
+                </td>
+                <td>
+                    @Model.week52Low
+                </td>
+            </tr>
+        </tbody>
+    </table>
+    <div class="text-center">
+        <form asp-action="Recommendation" method="post">
+            <input type="hidden" name="symbol" value="@Model.symbol" />
+            <button type="submit" class="btn btn-primary">
+                Get Recommendation
+            </button>
+        </form>
+    </div>
+}

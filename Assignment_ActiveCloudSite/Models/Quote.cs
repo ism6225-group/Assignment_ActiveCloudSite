@@ -8,7 +8,7 @@ namespace Assignment_ActiveCloudSite.Models
 {
     public class Quote
     {
-        //[Key]
+        [Key]
         public string symbol { get; set; }
         public string companyName { get; set; }
         public string primaryExchange { get; set; }

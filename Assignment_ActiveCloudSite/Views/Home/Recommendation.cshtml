@@ -4,52 +4,74 @@
 
 @model IEnumerable<Assignment_ActiveCloudSite.Models.Recommendation>
 
-<h2>Recommendation of @Model.First().symbol</h2>
-<p><bold>Recommendation Trends</bold> from iexcloud.io Primary Partner.</p>
-<p class="text-center">
-    <a class="btn btn-success" asp-controller="Home" asp-action="Recommendation">Refresh Recommendation</a>
-</p>
+
 @if (Model == null)
 {
-<p class="alert-info text-center">Please choose a right symbol for Recommendation!</p>
+    <p class="text-center">
+        <a class="btn btn-outline-primary" asp-controller="Home" asp-action="Stocks">Back to Stocks</a>
+    </p>
+    <p class="alert-info text-center">Sorry, we could not find any recommendation for this stock!</p>
 }
 else if (Model.Count() == 0)
 {
-<p class="alert-danger text-center">Our database is empty! please Refresh Recommendation first!</p>
+    <p class="text-center">
+        <a class="btn btn-outline-primary" asp-controller="Home" asp-action="Stocks">Back to Stocks</a>
+    </p>
+    <p class="alert-info text-center">Sorry, we could not find any recommendation for this stock!</p>
 }
 else
 {
-<table class="table">
-    <thead>
-        <tr>
-            <th>
-                Number of Recommendations to Buy
-            </th>
-            <th>
-                Number of Recommendations to Hold
-            </th>
-            <th>
-                Number of Recommendations to Sell
-            </th>
-        </tr>
-    </thead>
+    <h2>Recommendation of <span class="text-uppercase">@Model.First().symbol</span></h2>
+    <p><bold>Recommendation Trends</bold> from iexcloud.io Primary Partner.</p>
+    <div class="text-center">
+        <form asp-action="Recommendation" method="post">
+            <input type="hidden" name="symbol" value="@Model.First().symbol" />
+            <button type="submit" class="btn btn-success">
+                Refresh Recommendation
+            </button>
+        </form>
+        <br>
+    </div>
+    <table class="table">
+        <thead>
+            <tr>
+                <th>
+                    Number of Recommendations to Buy
+                </th>
+                <th>
+                    Number of Recommendations to Hold
+                </th>
+                <th>
+                    Number of Recommendations to Sell
+                </th>
+            </tr>
+        </thead>
 
-    <tbody>
+        <tbody>
 
-        @foreach (var item in Model)
+            @foreach (var item in Model)
             {
-        <tr>
-            <td>
-                @Html.DisplayFor(modelItem => item.ratingBuy)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.ratingHold)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.ratingSell)
-            </td>
-        </tr>
+                <tr>
+                    <td>
+                        @Html.DisplayFor(modelItem => item.ratingBuy)
+                    </td>
+                    <td>
+                        @Html.DisplayFor(modelItem => item.ratingHold)
+                    </td>
+                    <td>
+                        @Html.DisplayFor(modelItem => item.ratingSell)
+                    </td>
+                </tr>
             }
-    </tbody>
-</table>
+        </tbody>
+    </table>
+    <div class="text-center">
+        <form asp-action="Quote" method="post">
+            <input type="hidden" name="symbol" value="@Model.First().symbol" />
+            <button type="submit" class="btn btn-primary">
+                Get Quote
+            </button>
+        </form>
+    </div>
 }
+

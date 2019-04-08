@@ -49,7 +49,7 @@ namespace Assignment_ActiveCloudSite.Controllers
             return View(marketNews);
         }
 
-        public IActionResult Recommendation(string symbol = "aapl")
+        public IActionResult Recommendation(string symbol = "aapl44")
         {
             List<Recommendation> recommendations = ReadRecommendations(symbol);
             return View(recommendations);
@@ -59,6 +59,12 @@ namespace Assignment_ActiveCloudSite.Controllers
         {
             List<Sector> sectors = ReadSectors();
             return View(sectors);
+        }
+
+        public IActionResult Quote(string symbol = "goog44")
+        {
+            Quote quote = ReadQuote(symbol);
+            return View(quote);
         }
 
         public IActionResult About()
@@ -103,7 +109,7 @@ namespace Assignment_ActiveCloudSite.Controllers
 
             return symbols;
         }
-        
+
         public IActionResult UpdateSymbols()
         {
             List<Symbol> symbols = GetSymbols();
@@ -118,7 +124,7 @@ namespace Assignment_ActiveCloudSite.Controllers
             }
             dbContext.SaveChanges();
             symbols = ReadSymbols();
-            return View("Symbols", symbols);
+            return View("Stocks", symbols);
         }
 
         // To clear Symbole table if we want to test
@@ -131,7 +137,7 @@ namespace Assignment_ActiveCloudSite.Controllers
         public IActionResult FullSymbols()
         {
             List<Symbol> symbols = ReadSymbols(true);
-            return View("Symbols", symbols);
+            return View("Stocks", symbols);
         }
 
         public List<Article> ReadLatestMarketNews()
@@ -195,7 +201,7 @@ namespace Assignment_ActiveCloudSite.Controllers
         public List<Recommendation> ReadRecommendations(string symbol)
         {
             UpdateRecommendations(symbol);
-            List<Recommendation> recommendations = dbContext.Recommendations.Where(r => r.symbol.Equals(symbol)).ToList(); ;
+            List<Recommendation> recommendations = dbContext.Recommendations.Where(r => r.symbol.Equals(symbol)).ToList();
             return recommendations;
         }
 
@@ -232,6 +238,8 @@ namespace Assignment_ActiveCloudSite.Controllers
         public void UpdateRecommendations(string symbol)
         {
             List<Recommendation> recommendations = GetRecommendations(symbol);
+            if (recommendations != null)
+            {
 
             foreach (Recommendation recommendation in recommendations)
             {
@@ -246,6 +254,7 @@ namespace Assignment_ActiveCloudSite.Controllers
                     dbContext.Recommendations.RemoveRange(dbContext.Recommendations.Where(r => r.symbol.Equals(recommendation.symbol)));
                     dbContext.Recommendations.Add(recommendation);
                 }
+            }
             }
             dbContext.SaveChanges();
         }
@@ -295,7 +304,7 @@ namespace Assignment_ActiveCloudSite.Controllers
                 }
                 else
                 {
-                    // Remove old recommendations
+                    // Remove old Sectors
                     dbContext.Sectors.RemoveRange(dbContext.Sectors.Where(r => r.name.Equals(sector.name)));
                     dbContext.Sectors.Add(sector);
                 }
@@ -303,10 +312,65 @@ namespace Assignment_ActiveCloudSite.Controllers
             dbContext.SaveChanges();
         }
 
+        public Quote ReadQuote(string symbol)
+        {
+            Quote quote = null;
+            UpdateQuotes(symbol);
+            List<Quote> quotes = dbContext.Quotes.Where(r => r.symbol.Equals(symbol)).ToList();
+            if (quotes.Count() != 0)
+            {
+                quote = quotes.First();
+            }
+            //Quote quote = GetQuote(symbol);
+            return quote;
+        }
+
+        public Quote GetQuote(string symbol)
+        {
+            string Quote_API_PATH = BASE_URL_IEXT + "stock/" + symbol + "/quote";
+            string responseData = "";
+            Quote quote = new Quote();
+
+            HttpResponseMessage response = httpClient.GetAsync(Quote_API_PATH).GetAwaiter().GetResult();
+            if (response.IsSuccessStatusCode)
+            {
+                responseData = response.Content.ReadAsStringAsync().GetAwaiter().GetResult();
+            }
+
+            if (!string.IsNullOrEmpty(responseData))
+            {
+                quote = JsonConvert.DeserializeObject<Quote>(responseData);
+            }
+            else
+            {
+                quote = null;
+            }
+            return quote;
+        }
+
+        public void UpdateQuotes(string symbol)
+        {
+            Quote quote = GetQuote(symbol);
+            if (quote != null)
+            {
+                if (dbContext.Quotes.Where(r => r.symbol.Equals(quote.symbol)).Count() == 0)
+                {
+                    dbContext.Quotes.Add(quote);
+                }
+                else
+                {
+                    // Remove old Quotes
+                    dbContext.Quotes.RemoveRange(dbContext.Quotes.Where(r => r.symbol.Equals(quote.symbol)));
+                    dbContext.Quotes.Add(quote);
+                }
+                dbContext.SaveChanges();
+            }
+        }
+
         [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
-         public IActionResult Error()
-         {
-             return View(new ErrorViewModel { RequestId = Activity.Current?.Id ?? HttpContext.TraceIdentifier });
-         }
-    } 
+        public IActionResult Error()
+        {
+            return View(new ErrorViewModel { RequestId = Activity.Current?.Id ?? HttpContext.TraceIdentifier });
+        }
+    }
 }

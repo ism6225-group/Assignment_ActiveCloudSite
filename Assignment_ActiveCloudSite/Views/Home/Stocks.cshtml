@@ -7,26 +7,26 @@
 <h2>Market Stocks</h2>
 <p><bold>Symbol</bold>: refers to the symbol represented in Nasdaq Integrated symbology (INET).</p>
 <p class="text-center">
-    <a class="btn btn-success" asp-controller="Home" asp-action="UpdateSymbols">Refresh Symbols</a>
-    <a class="btn btn-primary" asp-controller="Home" asp-action="FullSymbols">Full Symbols</a>
+    <a class="btn btn-success" asp-controller="Home" asp-action="UpdateSymbols">Refresh Stocks</a>
+    <a class="btn btn-primary" asp-controller="Home" asp-action="FullSymbols">Full Stocks</a>
 </p>
 @if (Model == null)
 {
-    <p class="alert-info text-center">Please Load Symbols!</p>
+    <p class="alert-info text-center">Please Load Stocks!</p>
 }
 else if (Model.Count() == 0)
 {
-    <p class="alert-danger text-center">Our database is empty! please Refresh Symbols first!</p>
+    <p class="alert-danger text-center">Our database is empty! please Refresh Stocks first!</p>
 }
 else
 {
     if (Model.Count() <= 50)
     {
-        <p class="alert-info text-center">The first 50 Symbols from our database. Please Refresh Symbols to get an updated data from IEX API!</p>
+        <p class="alert-info text-center">The first 50 Stocks from our database. Please Refresh Stocks to get an updated data from IEX API!</p>
     }
     else
     {
-        <p class="alert-info text-center">All Symbols from our database.</p>
+        <p class="alert-info text-center">All Stocks from our database.</p>
 
     }
     <table class="table">
@@ -43,6 +43,10 @@ else
                 </th>
                 <th>
                     Type
+                </th>
+                <th>
+                </th>
+                <th>
                 </th>
             </tr>
         </thead>
@@ -63,6 +67,22 @@ else
                     </td>
                     <td>
                         @Html.DisplayFor(modelItem => item.type)
+                    </td>
+                    <td>
+                        <form asp-action="Quote" method="post">
+                            <input type="hidden" name="symbol" value="@item.symbol" />
+                            <button type="submit" class="btn btn-outline-primary">
+                                Get Quote
+                            </button>
+                        </form>
+                    </td>
+                    <td>
+                        <form asp-action="Recommendation" method="post">
+                            <input type="hidden" name="symbol" value="@item.symbol" />
+                            <button type="submit" class="btn btn-primary">
+                                Get Recommendation
+                            </button>
+                        </form>
                     </td>
                 </tr>
             }

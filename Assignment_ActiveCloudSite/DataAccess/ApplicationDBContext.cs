@@ -12,10 +12,8 @@ namespace Assignment_ActiveCloudSite.DataAccess
         public ApplicationDBContext(DbContextOptions<ApplicationDBContext> options) : base(options) { }
 
         public DbSet<Symbol> Symbols { get; set; }
-        //public DbSet<Company> Companies { get; set; }
         public DbSet<Sector> Sectors { get; set; }
-        //public DbSet<Quote> Quotes { get; set; }
-        //public DbSet<Chart> Charts { get; set; }
+        public DbSet<Quote> Quotes { get; set; }
         public DbSet<Article> News { get; set; }
         public DbSet<Recommendation> Recommendations { get; set; }
     }
